@@ -24,6 +24,7 @@
         --container-max: 1100px;
         --accent: #0b74de;
         --bg: #ffe5ec;
+        --carousel-duration: 7s; /* slowed down */
       }
       * {
         box-sizing: border-box;
@@ -143,7 +144,7 @@
       .home-name {
         margin: 0;
         font-weight: 700;
-        font-size: clamp(2rem, 8vw, 4rem);
+        font-size: clamp(2rem, 8vw, 4rem); /* taille principale adaptable */
         line-height: 1.05;
         font-family: "Cinzel", serif;
         text-transform: uppercase;
@@ -153,33 +154,35 @@
         overflow-wrap: anywhere;
         word-break: break-word;
       }
+
       .home-name .last-name {
         display: block;
-        font-size: 1.05em;
+        font-size: clamp(2rem, 7vw, 3.5rem); /* taille indépendante */
+        line-height: 1.1;
       }
+
       .home-name .first-name {
         display: block;
-        font-size: clamp(0.9rem, 3.5vw, 1.6rem);
+        font-size: clamp(1rem, 4vw, 1.6rem); /* taille indépendante */
         text-transform: none;
         font-weight: 400;
-        margin-top: 0.18em;
+        margin-top: 0.2em;
       }
 
       /* Extra safeguards for very small screens to avoid overflow */
       @media (max-width: 420px) {
         .home-name {
-          font-size: clamp(1rem, 7vw, 2.2rem);
+          font-size: clamp(1.4rem, 6vw, 2.2rem);
+        }
+        .home-name .last-name {
+          font-size: clamp(1.2rem, 5.5vw, 2rem);
+          line-height: 1.05;
         }
         .home-name .first-name {
-          font-size: clamp(0.8rem, 4.5vw, 1.2rem);
+          font-size: clamp(0.9rem, 4.5vw, 1.2rem);
         }
         .hero-content {
           padding: 0 12px;
-        }
-        /* Reduce last-name slightly to avoid descender clipping on narrow screens */
-        .home-name .last-name {
-          font-size: 0.95em;
-          line-height: 1.02;
         }
       }
 
@@ -263,19 +266,18 @@
         ); /* adjust for reduced padding (12px top+bottom) */
       }
 
-      /* Center the carousel vertically inside the portfolio section */
+      /* Make portfolio section adapt to images (no fixed height) */
       #portfolio {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 12px; /* further reduced padding */
-        min-height: 30vh; /* reduced to requested smaller height */
+        padding: 12px; /* keep compact padding */
+        min-height: auto; /* let section size itself to content */
       }
 
       /* Make image columns size to their scaled width while image fills section height */
       .image-container {
-        grid-auto-columns: auto; /* column width follows image width when scaled */
-        gap: 6px; /* smaller gap */
+        gap: 4px; /* very small gap */
       }
 
       .carousel img {
@@ -286,24 +288,30 @@
       }
 
       .image-container {
-        display: grid;
-        grid-auto-flow: column;
-        /* slightly narrower columns so images scale better in the smaller section */
-        grid-auto-columns: 560px;
-        gap: 6px; /* smaller gap between images */
-        align-items: center; /* center images vertically */
+        display: flex; /* use flex for reliable inline flow */
+        flex-wrap: nowrap;
+        gap: 4px; /* very small gap between images */
+        align-items: center;
+        width: max-content; /* ensure container width equals content width */
         transform: translateX(0);
-        animation: animation 12s linear infinite;
+        will-change: transform;
       }
 
       .carousel img {
         display: block;
-        width: auto; /* keep aspect ratio */
-        height: auto; /* keep aspect ratio */
-        max-width: 100%;
-        max-height: 100%; /* fill the carousel height */
-        margin: 0 auto;
+        width: 100%;
+        height: auto; /* preserve aspect ratio */
+        object-fit: cover;
+        margin: 0;
         border-radius: 8px;
+      }
+
+      /* Each image occupies a fixed flex-basis so they appear large and consistent
+         across viewports; image itself fills that box preserving aspect ratio. */
+      .image-container img {
+        flex: 0 0 min(900px, 95vw); /* large on desktop, responsive on small screens */
+        width: 100%;
+        height: auto;
       }
 
       /* Pause animation on hover/focus for accessibility */
@@ -312,23 +320,40 @@
         animation-play-state: paused;
       }
 
-      /* Keyframes to scroll images left by 50% (duplicate images used for seamless loop) */
-      @keyframes animation {
-        0% {
-          transform: translateX(0);
-        }
-        100% {
-          transform: translateX(-50%);
-        }
-      }
+      /* Animation is handled by JS for pixel-perfect seamless looping. */
 
       @media (max-width: 520px) {
         .image-container {
-          grid-auto-columns: 260px;
+          gap: 2px; /* minimal gap on very small screens */
+        }
+        /* On small screens make each image fill nearly full width */
+        .image-container img {
+          flex: 0 0 calc(100% - 32px);
+          width: 100%;
+          height: auto;
+        }
+        .carousel {
+          width: 100%;
+          height: auto; /* let carousel size to images */
         }
         .carousel img {
-          max-height: 180px;
-          width: auto;
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+        }
+
+        /* Tighten section paddings and page widths on small screens */
+        section {
+          padding: 16px;
+        }
+        #about .about-root {
+          padding: 8px 6px;
+        }
+        #about .page {
+          padding: 0 6px;
+        }
+        #contact .contact-section {
+          padding: 18px;
         }
       }
       /* Scoped Contact styles (adapted from user snippet) */
@@ -720,33 +745,44 @@
             <div class="section">
               <div class="section-label">Courte présentation</div>
               <div class="section-body">
-                Je m'appelle Manohisoa, j'ai 19 ans et j'habite à Ankadifotsy,
-                Antananarivo. La mode fait partie de mon quotidien : j'aime
-                m'habiller avec style et je partage mes tenues sur Instagram.
-                CURVY MDG m'attire parce que c'est une marque qui nous ressemble
-                vraiment "nous", les femmes curvy de Madagascar et ça, c'est
-                rare et précieux.
+                Je m’appelle Manou, j’ai 19 ans, et la mode fait partie de moi.
+                Chaque jour est une occasion de m’exprimer à travers mes tenues,
+                que je partage avec plaisir sur Instagram. Ce qui me touche
+                profondément chez CURVY MDG, c’est votre mission : représenter
+                les femmes curvy de Madagascar avec fierté et authenticité.
+                Cette démarche correspond exactement à mes valeurs: le body
+                positivity, l’inclusion, et l’idée que toutes les silhouettes
+                méritent d’être célébrées. Rejoindre cette aventure, ce serait
+                bien plus qu’un shooting : ce serait défendre quelque chose qui
+                me tient à cœur.
               </div>
             </div>
 
             <div class="section">
               <div class="section-label">Pourquoi moi ?</div>
               <div class="section-body">
-                Je sais instinctivement quelles coupes mettent en valeur une
-                silhouette curvy et ça se voit dans la façon dont je porte les
-                vêtements. Les compliments que je reçois régulièrement sur mes
-                tenues ne viennent pas du hasard : ils viennent d'un vrai regard
-                sur ce qui fonctionne sur mon corps. Je suis sérieuse,
-                ponctuelle et je n'ai pas besoin qu'on me porte, je m'investis
-                par moi-même dans ce que je fais.
+                Je suis naturellement à l’aise devant l’objectif. Poser, trouver
+                le bon angle, mettre en valeur une pièce sur une silhouette
+                curvy, c’est quelque chose qui vient instinctivement pour moi,
+                et ça se ressent dans les photos. Je sais comment mon corps
+                bouge, comment il se porte, et comment faire rayonner un
+                vêtement sur une vraie courbe. Ce serait un vrai atout pour vos
+                visuels. Je suis aussi quelqu’un qui apprend vite et qui
+                s’implique à fond dans ce qu’elle entreprend. J’observe,
+                j’assimile, et je donne le meilleur dès le départ. Sérieuse et
+                ponctuelle, je ne fais jamais les choses à moitié.
               </div>
             </div>
 
             <div class="section">
               <div class="section-label">Ma plus grande qualité</div>
               <div class="section-body quote">
-                Mon œil pour les détails fait la différence, c'est ce qui me
-                permet de toujours trouver la tenue qui tombe juste.
+                J’adore acquérir de nouvelles compétences. Que ce soit de
+                nouvelles façons de poser, de nouveaux univers visuels ou de
+                nouveaux codes créatifs: je suis toujours partante pour
+                progresser et m’adapter. Cette curiosité et cette envie
+                d’apprendre, c’est ce qui me permet d’évoluer vite et de
+                m’améliorer à chaque expérience.
               </div>
             </div>
 
@@ -761,7 +797,7 @@
                 <div class="tarif-grid">
                   <div class="tarif-card">
                     <div class="tarif-card-label">Cachet</div>
-                    <div class="tarif-card-value">20 000 – 50 000 Ar</div>
+                    <div class="tarif-card-value">60 000 – 70 000 Ar</div>
                     <div class="tarif-card-note">
                       Pour une demi-journée de shooting
                     </div>
@@ -904,6 +940,72 @@
             btn.setAttribute("aria-expanded", "false");
           }
         });
+      })();
+
+      (function () {
+        // JS-driven seamless carousel: measures widths and animates via requestAnimationFrame
+        const container = document.querySelector(".image-container");
+        if (!container) return;
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        let durationRaw =
+          rootStyles.getPropertyValue("--carousel-duration").trim() || "3s";
+        let duration = 3;
+        if (durationRaw.endsWith("ms"))
+          duration = parseFloat(durationRaw) / 1000;
+        else if (durationRaw.endsWith("s")) duration = parseFloat(durationRaw);
+
+        let totalWidth = 0;
+        let halfWidth = 0;
+        let speed = 0; // px per second
+        let pos = 0; // current translateX in px (starts at 0)
+        let paused = false;
+
+        function updateSizes() {
+          // total scrollWidth includes duplicated images; halfWidth is one sequence
+          totalWidth = container.scrollWidth;
+          halfWidth = totalWidth / 2 || totalWidth;
+          // keep a minimum to avoid divide-by-zero
+          if (!halfWidth) halfWidth = container.offsetWidth || 1;
+          speed = halfWidth / Math.max(0.001, duration);
+        }
+
+        updateSizes();
+
+        let last = performance.now();
+        function step(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          if (!paused) {
+            pos -= speed * dt;
+            if (pos <= -halfWidth) pos += halfWidth; // wrap seamlessly
+            container.style.transform = `translateX(${pos}px)`;
+          }
+          requestAnimationFrame(step);
+        }
+
+        // Pause on hover / focus for accessibility
+        container.addEventListener("mouseenter", () => (paused = true));
+        container.addEventListener("mouseleave", () => (paused = false));
+        container.addEventListener("focusin", () => (paused = true));
+        container.addEventListener("focusout", () => (paused = false));
+
+        // Recompute sizes on resize and when images load
+        let resizeObserver = new ResizeObserver(() => {
+          // align pos into new halfWidth range without visual jump
+          const prevHalf = halfWidth || 0;
+          updateSizes();
+          if (prevHalf) pos = ((pos % halfWidth) + halfWidth) % halfWidth; // keep within range
+        });
+        resizeObserver.observe(container);
+
+        // Also update when images finish loading (they can change sizes)
+        const imgs = container.querySelectorAll("img");
+        imgs.forEach((img) => {
+          if (!img.complete) img.addEventListener("load", updateSizes);
+        });
+
+        requestAnimationFrame(step);
       })();
     </script>
   </body>
